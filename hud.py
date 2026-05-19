@@ -22,6 +22,10 @@ class HUD:
         #Éléments visuelles
         #Fenêtre et Canvas
         self.root = tk.Tk()
+        self.x_middle = int(self.current_setting["canvas_dimension"][0]/2)
+        self.x_max = self.current_setting["canvas_dimension"][0]
+        self.y_max = self.current_setting["canvas_dimension"][1]
+        self.bord_color = "darkgreen"
         self.root.geometry(f"{self.current_setting['canvas_dimension'][0]}x{self.current_setting['canvas_dimension'][0]}")
         self.root.config(bg="gray20")
         self.display = tk.Canvas(self.root, width=self.current_setting['canvas_dimension'][0], height=int(self.current_setting['canvas_dimension'][1]), bg="darkblue")
@@ -33,10 +37,23 @@ class HUD:
         self.checkb_var = tk.BooleanVar()   #Bord
         self.checkb_var.set(True)
         self.checkb_var2 = tk.BooleanVar()  #Trous
+        self.checkb_var2.set(True)
         self.data_var = tk.StringVar()      #N for replay step up/down
         self.data_var2 = tk.StringVar()     #Friction value
-        self.border = []
-        self.holes = []
+        self.border = [
+            self.display.create_rectangle(0, 0, self.x_max, 15, fill=self.bord_color, outline=self.bord_color),
+            self.display.create_rectangle(self.x_max-15, 0, self.x_max, self.y_max, fill=self.bord_color, outline=self.bord_color),
+            self.display.create_rectangle(0, self.y_max-13, self.x_max, self.y_max+3, fill=self.bord_color, outline=self.bord_color),
+            self.display.create_rectangle(0, 0, 15, self.y_max, fill=self.bord_color, outline=self.bord_color)
+                        ]
+        self.holes = [
+            self.display.create_oval(8, 8, 34, 34, fill="black", outline="black"),
+            self.display.create_oval(self.x_middle-13, 8, self.x_middle+13, 34, fill="black", outline="black"),
+            self.display.create_oval(self.x_max-34, 8, self.x_max-8, 34, fill="black", outline="black"),
+            self.display.create_oval(8, self.y_max-32, 34, self.y_max-6, fill="black", outline="black"),
+            self.display.create_oval(self.x_middle-13, self.y_max-32, self.x_middle+13, self.y_max-6, fill="black", outline="black"),
+            self.display.create_oval(self.x_max-32, self.y_max-32, self.x_max-6, self.y_max-6, fill="black", outline="black")
+                        ]
         self.objects = []
         self.objects_show = []
         
@@ -131,35 +148,18 @@ class HUD:
     
     #Méthode pour afficher les trous et les bords.
     def plan_update(self):
-        #Définir les valeurs importantes
-        x_middle = int(self.current_setting["canvas_dimension"][0]/2)
-        x_max = self.current_setting["canvas_dimension"][0]
-        y_max = self.current_setting["canvas_dimension"][1]
-
-        #Création du bord ou supression du bord
-        bord_color = "darkgreen"
         if self.checkb_var.get():
-            self.border.append(self.display.create_rectangle(0, 0, x_max, 15, fill=bord_color, outline=bord_color))
-            self.border.append(self.display.create_rectangle(x_max-15, 0, x_max, y_max, fill=bord_color, outline=bord_color))
-            self.border.append(self.display.create_rectangle(0, y_max-13, x_max, y_max+3, fill=bord_color, outline=bord_color))
-            self.border.append(self.display.create_rectangle(0, 0, 15, y_max, fill=bord_color, outline=bord_color))
+            for element in self.border:
+                self.display.itemconfig(element, state="normal")
         else:
             for element in self.border:
-                self.display.delete(element)
-            del self.border[:]
-        #supression des trous
-        for element in self.holes:
-            self.display.delete(element)
-        del self.holes[:]
-        #Création des trous si checkb_var2 == True.
+                self.display.itemconfig(element, state="hidden")
         if self.checkb_var2.get():
-            self.holes.append(self.display.create_oval(8,8,34,34, fill="black", outline="black"))
-            self.holes.append(self.display.create_oval(x_middle-13, 8, x_middle+13, 34, fill="black", outline="black"))
-            self.holes.append(self.display.create_oval(x_max-34, 8, x_max-8, 34, fill="black", outline="black"))
-            self.holes.append(self.display.create_oval(8 ,y_max-32, 34,y_max-6, fill="black", outline="black"))
-            self.holes.append(self.display.create_oval(x_middle-13, y_max-32, x_middle+13, y_max-6, fill="black", outline="black"))
-            self.holes.append(self.display.create_oval(x_max-32, y_max-32, x_max-6, y_max-6, fill="black", outline="black"))
-
+            for element in self.holes:
+                self.display.itemconfig(element, state="normal")
+        else:
+            for element in self.holes:
+                self.display.itemconfig(element, state="hidden")
     #Le pointeur
     def arrow_update(self):
         #replacer la balle si celle-ci est mal placé
@@ -428,8 +428,6 @@ class HUD:
         self.lab5.config(text="Étape : 0/0")
 
         #Réinitialisation des autres valeurs.
-        self.checkb_var.set(True)
-        self.checkb_var2.set(False)
         self.plan_update()
         self.arrow_update()
 
